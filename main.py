@@ -68,6 +68,43 @@ def get_day_schedule():
 
     return jsonify(lessons)
 
+
+# Получение списка групп
+@app.route('/groups', methods=['GET'])
+def get_groups():
+    query = "SELECT id, group_name FROM Groups"
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute(query)
+    groups = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(groups)
+
+# Получение списка преподавателей
+@app.route('/teachers', methods=['GET'])
+def get_teachers():
+    query = "SELECT id, Name FROM Teachers"
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute(query)
+    teachers = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(teachers)
+
+# Получение списка кабинетов
+@app.route('/rooms', methods=['GET'])
+def get_rooms():
+    query = "SELECT id, RoomNumber FROM Rooms"
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute(query)
+    rooms = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(rooms)
+
 # Получение расписания на неделю
 @app.route('/schedule/week', methods=['GET'])
 def get_week_schedule():
