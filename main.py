@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
+
 # Подключение к базе данных
 def get_db_connection():
     return mysql.connector.connect(
@@ -15,6 +16,7 @@ def get_db_connection():
         database="sql7752598",
         port=3306
     )
+
 
 # Получение расписания на день
 @app.route('/schedule/day', methods=['GET'])
@@ -81,6 +83,7 @@ def get_groups():
     connection.close()
     return jsonify(groups)
 
+
 # Получение списка преподавателей
 @app.route('/teachers', methods=['GET'])
 def get_teachers():
@@ -93,6 +96,7 @@ def get_teachers():
     connection.close()
     return jsonify(teachers)
 
+
 # Получение списка кабинетов
 @app.route('/rooms', methods=['GET'])
 def get_rooms():
@@ -104,6 +108,7 @@ def get_rooms():
     cursor.close()
     connection.close()
     return jsonify(rooms)
+
 
 # Получение расписания на неделю
 @app.route('/schedule/week', methods=['GET'])
@@ -159,6 +164,42 @@ def get_week_schedule():
     connection.close()
 
     return jsonify(lessons)
+
+
+@app.route('/schedule/full_day', methods=['GET'])
+def get_full_day_schedule():
+    date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))  # По умолчанию текущая дата
+
+    query = """
+    SELECT 
+        l.id, 
+        s.SubjectName, 
+        g.group_name, 
+        t.Name, 
+        r.RoomNumber, 
+        d.day_date, 
+        lt.lesson_type
+    FROM Lesson l
+    JOIN Subjects s ON l.SubjectID = s.id
+    JOIN Groups g ON l.GroupID = g.id
+    JOIN Teachers t ON l.TeacherID = t.id
+    JOIN Rooms r ON l.RoomID = r.id
+    LEFT JOIN Lesson_Type lt ON l.lesson_type = lt.id
+    JOIN Day d ON l.day = d.id
+    WHERE d.day_date = %s
+    """
+
+    params = [date]
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute(query, params)
+    lessons = cursor.fetchall()
+    cursor.close()
+    connection.close()
+
+    return jsonify(lessons)
+
 
 # Экспорт расписания в CSV
 @app.route('/schedule/export', methods=['GET'])
@@ -220,6 +261,7 @@ def export_schedule():
     csv_output.seek(0)
 
     return send_file(csv_output, mimetype='text/csv', as_attachment=True, download_name='schedule.csv')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
